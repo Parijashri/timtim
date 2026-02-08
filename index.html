@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>For TimTim 💖</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@500;700&display=swap');
+
+        :root {
+            --soft-pink: rgba(255, 182, 193, 0.4);
+            --deep-rose: #ff69b4;
+        }
+
+        /* Mobile Specific Adjustments */
+        @media (max-width: 600px) {
+            .memories-header h1 { font-size: 2rem !important; }
+            .memories-header p { font-size: 1rem !important; }
+            .polaroid-container { width: 130px !important; height: 160px !important; }
+            .scratch-canvas, .polaroid-img { width: 130px !important; height: 130px !important; }
+            .chits-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 5px !important; }
+            .chit-container { width: 80px !important; height: 60px !important; }
+            .chit-front, .chit-back { font-size: 0.7rem !important; }
+            .font-rainbow { font-size: 3rem !important; }
+            .font-dreams { font-size: 2.5rem !important; }
+            .ttt-board { grid-template-columns: repeat(3, 70px) !important; gap: 10px !important; }
+            .cell { width: 70px !important; height: 70px !important; }
+        }
+
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #050505; overflow: hidden; font-family: 'Quicksand', sans-serif; color: white; position: fixed; }
+        
+        .btn-main { 
+            padding: 12px 30px; border: 1px solid rgba(255,255,255,0.3); border-radius: 50px; 
+            background: var(--soft-pink); color: white; backdrop-filter: blur(10px);
+            cursor: pointer; font-weight: 700; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-main:hover { background: rgba(255, 182, 193, 0.6); transform: translateY(-2px); }
+
+        #bg-banner { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 500; opacity: 0; transition: opacity 2s ease; filter: brightness(0.6); }
+        #bg-overlay { position: fixed; inset: 0; z-index: 501; opacity: 0; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.4) 100%); transition: opacity 2s ease; }
+
+        /* ACT 1: BUNNY */
+        #creature { position: fixed; width: 180px; z-index: 5000; transition: all 2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; opacity: 0; }         
+        #bubble { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); padding: 50px; border-radius: 40px; text-align: center; display: none; z-index: 6000; }
+
+        /* ACT 2: THEATER */
+        #theater-overlay { display: none; position: fixed; inset: 0; z-index: 2000; }
+        .curtain { position: absolute; top: 0; width: 50.5%; height: 100%; background: linear-gradient(90deg, #2c000b, #5e0018, #2c000b); transition: 3s cubic-bezier(0.7, 0, 0.3, 1); z-index: 2001; }
+        .left-curtain { left: 0; border-right: 1px solid rgba(255,215,0,0.3); } .right-curtain { right: 0; border-left: 1px solid rgba(255,215,0,0.3); }
+        #video-stage { position: fixed; inset: 0; display: none; z-index: 1000; align-items: center; justify-content: center; }
+        .video-wrapper { width: 85vw; max-width: 800px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 30px; backdrop-filter: blur(10px); }
+        video { width: 100%; border-radius: 20px; }
+
+        /* ACT 3: ENVELOPE */
+        #finale-page { position: fixed; inset: 0; display: none; z-index: 8000; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: 1s; }
+        .envelope { width: 200px; cursor: pointer; transition: 0.5s; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4)); pointer-events: auto; position: relative; z-index: 8005; }
+        .envelope:hover { transform: scale(1.1) rotate(-3deg); }
+
+        /* ACT 4: LETTER */
+        #letter-page { 
+            position: fixed; inset: 0; z-index: 8100; 
+            display: none; flex-direction: column; align-items: center; justify-content: center; 
+            background: rgba(244, 184, 184, 0.05); 
+            backdrop-filter: blur(10px); 
+            opacity: 0; transition: opacity 1s ease; 
+        }
+
+        .letter-container { position: relative; width: 90vw; height: 85vh; max-width: calc(85vh * (9/16)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .letter-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; z-index: -1; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5)); }
+        .letter-content { width: 80%; height: 85%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 20px 0; }
+        .letter-pfp { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-top: 10px; }
+        .letter-text { font-family: 'Dancing Script', cursive; font-size: 1.5rem; line-height: 1.3; color: #444; text-align: center; white-space: pre-wrap; margin: 15px 0; }
+        .letter-btn { background: var(--deep-rose); color: white; width: 90%; }
+
+        /* ACT 4: SCRAPBOOK */
+        #scrapbook-page { position: fixed; inset: 0; z-index: 8200; display: none; flex-direction: column; align-items: center; padding: 20px; background: rgba(248, 203, 203, 0.162); overflow-y: auto; }         
+        .scrapbook-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); justify-content: center; gap: 20px; max-width: 1000px; }
+        .polaroid-container { 
+    position: relative; 
+    width: 160px; 
+    min-height: 200px; /* Changed from height to min-height */
+    background: white; 
+    padding: 10px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+    transform: rotate(var(--r)); 
+    margin: 10px; 
+    display: flex; /* Added to keep things aligned */
+    flex-direction: column;
+}
+
+.polaroid-img { 
+    width: 160px; 
+    height: 160px; 
+    object-fit: cover; 
+    flex-shrink: 0; /* Prevents image from shrinking if text is long */
+}
+
+.caption { 
+    font-family: 'Dancing Script'; 
+    color: #444; 
+    text-align: center; 
+    margin-top: 8px; 
+    font-size: 1.1rem;
+    word-wrap: break-word; /* Ensures long words don't break the layout */
+}
+        .scratch-canvas { position: absolute; top: 10px; left: 10px; z-index: 2; cursor: crosshair; }
+
+        /* ACT 5: CHITS */
+     /* ACT 5: CHITS - FIXED */
+#chits-page { 
+    position: fixed; 
+    inset: 0; 
+    z-index: 8300; 
+    display: none; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: flex-start; /* Changed from center to allow scrolling */
+    background: rgba(255, 214, 214, 0.11); 
+    overflow-y: auto; /* Allows scrolling if chits exceed screen height */
+    padding: 40px 10px;
+}
+
+.chits-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile for readability */
+    gap: 12px; 
+    width: 100%;
+    max-width: 600px;
+}
+
+@media (min-width: 600px) {
+    .chits-grid { grid-template-columns: repeat(4, 1fr); } /* 4 columns on desktop */
+}
+
+.chit-container { 
+    aspect-ratio: 3/2; /* Keeps them rectangular */
+    width: 100%; 
+    cursor: pointer; 
+    transform-style: preserve-3d; 
+    transition: 0.6s; 
+    position: relative; 
+}
+
+.chit-container.flipped { transform: rotateY(180deg); }
+
+.chit-front, .chit-back { 
+    position: absolute; 
+    inset: 0; 
+    backface-visibility: hidden; 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 8px; 
+    font-family: 'Dancing Script'; 
+    text-align: center; 
+}
+
+.chit-front { 
+    background: #fff5ba; 
+    color: #444; 
+    border: 2px dashed #e6db9c; 
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.chit-back {
+    background: var(--deep-rose);
+    color: white;
+    transform: rotateY(180deg);
+    font-size: 0.85rem; /* Adjusted for your specific text lengths */
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+        /* ACT 6: BIRTHDAY REVEAL */
+        /* ACT 6: BIRTHDAY REVEAL */
+        #birthday-reveal { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 9000; 
+            display: none; 
+            /* Making the background semi-transparent so you see the banner/sparkles */
+            background: rgba(5, 5, 5, 0.6); 
+            backdrop-filter: blur(3px);
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
+            text-align: center; 
+        }
+
+        .decor-layer { 
+            position: fixed; 
+            inset: 0; 
+            pointer-events: none; 
+            /* Lowered z-index to stay behind everything, even the sparkles */
+            z-index: -2; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            opacity: 0.5; 
+        }
+
+        /* This container holds the text and cake */
+        .hbd-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: -50px; /* Pulls everything up slightly */
+            gap: 15px; /* Tightens space between text and cake */
+        }
+
+        .cake-img {
+            width: 200px; /* Smaller to guarantee button visibility */
+            height: auto;
+            filter: drop-shadow(0 0 15px rgba(255,192,203,0.5));
+        }
+
+        /* ACT 7: GAME & CERT */
+        #gift-page { position: fixed; inset: 0; z-index: 9500; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        .ttt-board { display: grid; grid-template-columns: repeat(3, 100px); gap: 15px; }
+        .cell { width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; cursor: pointer; }
+        #cert-wrapper { display: none; width: 90vw; max-width: 700px; z-index: 10000; cursor: pointer; }
+        #cert-wrapper img { width: 100%; border-radius: 15px; }
+
+        /* ACT 8: VALENTINE */
+        #valentine-page { position: fixed; inset: 0; z-index: 11000; display: none; background: rgba(255, 240, 245, 0.11); backdrop-filter: blur(15px); flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #val-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        .val-btns { display: flex; gap: 20px; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+    <img id="bg-banner" src="banner.png">
+    <div id="bg-overlay"></div>
+    <img id="creature" src="https://media4.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3OGZwOHZmOGs0ZGhmdzd3ZGVwcnprZXBzNTV3OHEyeGJpczhmY2V6ZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/O3Ne49jcK9dBfOYk8B/giphy.webp">
+
+    <div id="bubble">
+        <h2 style="font-family: 'Playfair Display'; font-size: 2.5rem;">Shall we see where this story goes together?✨</h2>
+        <button class="btn-main" onclick="startShow()">Let’s go....cutuuuu!</button>
+    </div>
+
+    <div id="theater-overlay"><div class="curtain left-curtain" id="l-curt"></div><div class="curtain right-curtain" id="r-curt"></div></div>
+    
+    <div id="video-stage">
+        <div class="video-wrapper"><video id="v" playsinline><source src="rimi.mp4" type="video/mp4"></video></div>
+    </div>
+
+    <div id="finale-page">
+        <img src="envelope.png" class="envelope" onclick="triggerEnvelope()">
+        <p style="font-family:'Dancing Script'; font-size:2.5rem; margin-top:20px;">Someone left a secret for you... 💌</p>
+    </div>
+
+    <div id="letter-page">
+        <div class="letter-container">
+            <img src="letterrr.png" class="letter-bg-img">
+            <div class="letter-content">
+                <img src="baby.jpeg" class="letter-pfp">
+                
+                <div class="letter-text">
+hiee babyyyy gurllll <3 
+I honestly crush over u every single day...how did I get the prettiest, most talented sister on the planet? I’m forever ur no1 fan girl, TimTim. I’m obsessed with the person ur becoming! I love you to the moon!
+                </div>
+                
+                <button class="btn-main letter-btn" onclick="closeLetter()">
+                    Tracing Your Light. ✨
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scrapbook-page">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="font-family:'Playfair Display'; font-size: 3.5rem; margin:0;">The TimTim Files</h1>
+            <p style="font-family:'Dancing Script'; font-size: 1.5rem; color:#ffb6c1;">My favorite view? Her, being herself.</p>
+        </div>
+        <div class="scrapbook-grid" id="scrap-grid"></div>
+        <button class="btn-main" style="margin: 40px 0;" onclick="showChits()">Top 16 Mystery</button>
+    </div>
+
+    <div id="chits-page">
+        <h1 style="font-family:'Playfair Display'; font-size:3rem; margin-bottom:30px;">Handpicked reasons why you're special.</h1>
+        <div class="chits-grid" id="chits-grid"></div>
+    </div>
+
+    <div id="birthday-reveal">
+        <img src="BG.png" class="decor-layer">
+        
+        <div class="hbd-content-wrapper">
+            <div>
+                <h1 class="font-rainbow" style="margin:0; line-height: 1.1;"><i>Neelaakshi</i></h1>
+                <p style="font-family:'Dancing Script'; font-size: 1.5rem; color:#ffb6c1;">The Main Character.</p>
+                        </div>
+            
+            <img src="cake.png" class="cake-img">
+            
+            <button class="btn-main" onclick="goToGame()" ontouchstart="goToGame()" style="margin-top: 10px; box-shadow: 0 0 20px rgba(255,105,180,0.4);">
+                Open Your Gift 🎁
+            </button>
+        </div>
+    </div>
+
+    <div id="gift-page">
+    <h2 id="game-status" style="font-family:'Dancing Script'; font-size:3rem; margin-bottom:20px;">
+        Win this game so I can finally show you the surprise. 
+    </h2>
+    
+    <div class="ttt-board">
+        <div class="cell" onclick="playTurn(0)"></div>
+        <div class="cell" onclick="playTurn(1)"></div>
+        <div class="cell" onclick="playTurn(2)"></div>
+        <div class="cell" onclick="playTurn(3)"></div>
+        <div class="cell" onclick="playTurn(4)"></div>
+        <div class="cell" onclick="playTurn(5)"></div>
+        <div class="cell" onclick="playTurn(6)"></div>
+        <div class="cell" onclick="playTurn(7)"></div>
+        <div class="cell" onclick="playTurn(8)"></div>
+    </div>
+
+    <div id="cert-wrapper" onclick="goToValentine()"><img src="certificate.png"></div>
+</div>
+
+    <div id="valentine-page">
+    <div id="val-content">
+        <img style="width:180px;" src="PROPOSE.png">
+        <h1 style="font-family: 'Playfair Display'; color: #ff8da1; font-size: 2.5rem; padding: 0 20px;">Will you be my Valentine and make this a Happy Ending? 🎀</h1>
+        <div class="val-btns">
+            <button id="yes-btn" class="btn-main" onclick="acceptedValentine()">Yessssss! 🥰</button>
+            <button id="no-btn" class="btn-main" onmouseover="moveNo()" ontouchstart="moveNo()">No Wayyyy 🤮</button>
+        </div>
+    </div>
+    
+    <div id="love-message" style="display:none; text-align:center; background:rgba(0,0,0,0.8); padding:30px; border-radius:20px; margin: 20px; backdrop-filter: blur(5px);">
+        <p style="font-size:1.1rem; opacity:0.9; margin:0; font-family: 'Quicksand';">I’m never letting go of this 'Happy Ending' we’ve started today.</p>
+        <div style="font-family:'Dancing Script', cursive; font-size:3.5rem; color:#ffc2cd; text-shadow:0 0 15px #f79dae; margin-top:10px;">I love you forever! ❤️</div>
+    </div>
+</div>
+   <script>
+    const $ = (id) => document.getElementById(id);
+    const video = $('v');
+    let tttData = Array(9).fill('');
+    let active = true;
+    let flippedCount = 0;
+    let bgInterval; // For the floating hearts
+
+    function emojiBurst() {
+        const emojis = ['💖', '✨', '🌸', '🥰', '🐰', '💌'];
+        for(let i=0; i<50; i++) {
+            setTimeout(() => {
+                const e = document.createElement('div');
+                e.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+                e.style.position = 'fixed'; e.style.left = '50%'; e.style.top = '50%';
+                e.style.fontSize = '30px'; e.style.zIndex = '20000';
+                e.style.pointerEvents = 'none';
+                e.style.transition = 'all 2s ease-out';
+                document.body.appendChild(e);
+                const tx = (Math.random() - 0.5) * window.innerWidth * 1.5;
+                const ty = (Math.random() - 0.5) * window.innerHeight * 1.5;
+                setTimeout(() => { e.style.transform = `translate(${tx}px, ${ty}px) rotate(${Math.random()*360}deg)`; e.style.opacity = '0'; }, 50);
+                setTimeout(() => e.remove(), 2000);
+            }, i * 20);
+        }
+    }
+
+    // New floating effect for Birthday Page
+    function startFloatingBG() {
+        const icons = ['🤍', '✨'];
+        bgInterval = setInterval(() => {
+            const f = document.createElement('div');
+            f.innerText = icons[Math.floor(Math.random()*icons.length)];
+            f.style.position = 'fixed';
+            f.style.left = Math.random() * 100 + 'vw';
+            f.style.bottom = '-50px';
+            f.style.fontSize = '20px';
+            f.style.opacity = '0.6';
+            f.style.zIndex = '8999';
+            f.style.transition = 'all 6s linear';
+            document.body.appendChild(f);
+            setTimeout(() => {
+                f.style.transform = `translateY(-110vh) translateX(${(Math.random()-0.5)*100}px)`;
+                f.style.opacity = '0';
+            }, 50);
+            setTimeout(() => f.remove(), 6000);
+        }, 300);
+    }
+
+    function drift() { 
+        const b = $('creature'); if(!b) return;
+        b.style.left = Math.random()*(window.innerWidth-200)+'px';
+        b.style.top = Math.random()*(window.innerHeight-200)+'px';
+        b.style.opacity = '1';
+    }
+    setInterval(drift, 2500); drift();
+
+    $('creature').onclick = () => $('bubble').style.display='block';
+
+    function startShow() {
+        $('bubble').style.display='none'; $('creature').style.display='none';
+        $('theater-overlay').style.display='block'; $('video-stage').style.display='flex';
+        setTimeout(() => {
+            $('bg-banner').style.opacity='1'; $('bg-overlay').style.opacity='1';
+            $('l-curt').style.transform='translateX(-100%)'; $('r-curt').style.transform='translateX(100%)';
+            video.play();
+        }, 100);
+    }
+
+    video.onended = () => { 
+        $('video-stage').style.opacity = '0';
+        setTimeout(() => {
+            $('video-stage').style.display='none'; 
+            $('finale-page').style.display='flex'; 
+            setTimeout(() => $('finale-page').style.opacity='1', 100); 
+        }, 1000);
+    };
+
+    function triggerEnvelope() {
+        emojiBurst();
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        setTimeout(() => {
+            $('finale-page').style.display = 'none';
+            $('letter-page').style.display = 'flex';
+            setTimeout(() => $('letter-page').style.opacity = '1', 50);
+        }, 1500);
+    }
+
+    function closeLetter() {
+        $('letter-page').style.opacity = '0';
+        setTimeout(() => {
+            $('letter-page').style.display = 'none';
+            $('scrapbook-page').style.display = 'flex';
+            initScratchCards();
+        }, 1000);
+    }
+
+    function initScratchCards() {
+        const container = $('scrap-grid');
+        container.innerHTML = '';
+        const data = [{img:'PIC1.jpeg',cap:'The origin of the chaos. 🍼',r:'-4deg'},{img:'pic4.jpeg',cap:'Who gave you permission to look this good?',r:'3deg'},{img:'PIC2.jpeg',cap:'Proof that some people are just born iconic.',r:'-2deg'},{img:'pic3.jpeg',cap:'The camera loves you, but I definitely love you more.',r:'5deg'},{img:'pic5.jpeg',cap:'Found my favorite view in the world.',r:'-3deg'},{img:'pic6.jpeg',cap:'A literal 11/10. My math is never wrong when it comes to you.',r:'2deg'}];
+        data.forEach((item) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'polaroid-container'; wrap.style.setProperty('--r', item.r);
+            wrap.innerHTML = `<canvas class="scratch-canvas" width="160" height="160"></canvas><img src="${item.img}" class="polaroid-img"><p class="caption">${item.cap}</p>`;
+            container.appendChild(wrap);
+            setupScratch(wrap.querySelector('canvas'));
+        });
+    }
+
+    function setupScratch(canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#d3d3d3'; ctx.fillRect(0,0,160,160);
+        let isDrawing = false;
+        const scratch = (e) => {
+            if(!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI * 2); ctx.fill();
+        };
+        canvas.onmousedown = canvas.ontouchstart = () => isDrawing = true;
+        window.onmouseup = window.ontouchend = () => isDrawing = false;
+        canvas.onmousemove = canvas.ontouchmove = (e) => { e.preventDefault(); scratch(e); };
+    }
+
+    function showChits() {
+    $('scrapbook-page').style.display = 'none';
+    $('chits-page').style.display = 'flex';
+    const grid = $('chits-grid'); 
+    grid.innerHTML = '';
+    
+    const reasons = [
+        "How you still care too much, even when the world is nagin", 
+        "the way you look when you first wake up", 
+        "your ugly cry..... it shows how deeply you feel.", 
+        "that you’re not perfect, because perfect is boring.", 
+        "when you’re shy; it’s a side only a few get to see.", 
+        "I love the things you try to hide; they make you real.", 
+        "the version of you that only exists when the lights are off.", 
+        "The way we can communicate just by looking at each other.", 
+        "The way you still have that same childhood spark in your eyes.", 
+        "For the way you defend me when I’m not even there.", 
+        "Singing the chorus of a song with 100% wrong lyrics.", 
+        "The way you’ve grown taller, but you’re still my little one.", 
+        "That I can be my weirdest self only when I’m with you.", 
+        "Because you’re my Person, and that will never change.", 
+        "Because at 16, you’re already the bravest person I know.", 
+        "Just for being Neelaakshi. That’s more than enough."
+    ];
+
+    reasons.forEach((r, i) => {
+        const chit = document.createElement('div');
+        chit.className = 'chit-container';
+        chit.innerHTML = `
+            <div class="chit-front">#${i+1}</div>
+            <div class="chit-back">${r}</div>
+        `;
+        
+        chit.onclick = () => { 
+            if(!chit.classList.contains('flipped')) { 
+                chit.classList.add('flipped'); 
+                flippedCount++; 
+                // Check if all 16 are flipped
+                if(flippedCount === 16) {
+                    setTimeout(triggerBigReveal, 1000);
+                } 
+            } 
+        };
+        grid.appendChild(chit);
+    });
+}
+    function triggerBigReveal() {
+            setTimeout(() => {
+                $('chits-page').style.display = 'none';
+                $('birthday-reveal').style.display = 'flex';
+                
+                // 1. Sparkle/Star Emoji Burst
+                emojiBurst(['✨', '⭐', '🌟', '💫', '✨']); 
+
+                // 2. Slow Heart/Sparkle Background
+                startFloatingBG(); 
+                
+                // 3. Gold & Silver Star Confetti Explosion
+                var duration = 3 * 1000;
+                var end = Date.now() + duration;
+
+                (function frame() {
+                  confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#FFE700', '#FFFFFF'],
+                    shapes: ['star']
+                  });
+                  confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#FFE700', '#FFFFFF'],
+                    shapes: ['star']
+                  });
+
+                  if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                  }
+                }());
+
+                // Massive center star pop
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.6 },
+                    shapes: ['star'],
+                    colors: ['#FFE700', '#FFD700', '#FFFFFF']
+                });
+            }, 1000);
+        }
+
+    function goToGame() { 
+        clearInterval(bgInterval); // Stop floating hearts
+        $('birthday-reveal').style.display='none'; 
+        $('gift-page').style.display='flex'; 
+    }
+    
+    function playTurn(i) {
+        if (tttData[i] || !active) return;
+        tttData[i] = '🐰'; document.getElementsByClassName('cell')[i].innerText = '🐰';
+        if (!checkWin()) setTimeout(bot, 500);
+    }
+
+    function bot() {
+        let avail = tttData.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+        if (avail.length && active) {
+            let m = avail[Math.floor(Math.random() * avail.length)];
+            tttData[m] = '💌'; document.getElementsByClassName('cell')[m].innerText = '💌';
+            checkWin();
+        }
+    }
+
+    function checkWin() {
+    const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    const win = lines.some(l => l.every(idx => tttData[idx] === '🐰'));
+    
+    if (win) {
+        active = false;
+        // CHANGE THIS LINE BELOW:
+        $('game-status').innerText = "OMG! You're literally a pro at this! 💖"; 
+        
+        setTimeout(() => {
+            // Also ensure you use the fixed ID from my previous message
+            const board = document.querySelector('.ttt-board');
+            if(board) board.style.display = 'none';
+            
+            $('cert-wrapper').style.display = 'block';
+            emojiBurst();
+            confetti({ particleCount: 150, spread: 70, colors: ['#FFD700', '#FFF'] });
+        }, 500);
+        return true;
+    }
+    return false;
+}
+    function goToValentine() {
+        $('gift-page').style.display = 'none';
+        $('valentine-page').style.display = 'flex';
+    }
+
+    function moveNo() {
+        const btn = $('no-btn');
+        btn.style.position = 'fixed';
+        // Randomly moves the No button across the screen so she can't click it
+        const newX = Math.random() * (window.innerWidth - 100);
+        const newY = Math.random() * (window.innerHeight - 50);
+        btn.style.left = newX + 'px';
+        btn.style.top = newY + 'px';
+    }
+
+   // Updated JavaScript for the Valentine Logic
+function acceptedValentine() {
+    $('val-content').style.display = 'none';
+    $('love-message').style.display = 'block'; // Now matches the ID above
+    emojiBurst();
+    confetti({ 
+        particleCount: 300, 
+        spread: 120, 
+        origin: { y: 0.6 },
+        colors: ['#ff69b4', '#ffb6c1', '#ffffff'] 
+    });
+}
+
+function moveNo() {
+    const btn = $('no-btn');
+    btn.style.position = 'fixed';
+    // Ensures the button stays within the viewport padding
+    const newX = Math.random() * (window.innerWidth - 150) + 25;
+    const newY = Math.random() * (window.innerHeight - 100) + 25;
+    btn.style.left = newX + 'px';
+    btn.style.top = newY + 'px';
+}
+</script>
+</body>
+</html>
