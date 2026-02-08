@@ -335,6 +335,8 @@ I honestly crush over u every single day...how did I get the prettiest, most tal
     
     <div class="ttt-board">
         <div class="cell" onclick="playTurn(0)"></div>
+        <div class="cell" onclick="playTurn(0)" ontouchstart="playTurn(0)"></div>
+
         <div class="cell" onclick="playTurn(1)"></div>
         <div class="cell" onclick="playTurn(2)"></div>
         <div class="cell" onclick="playTurn(3)"></div>
@@ -345,7 +347,7 @@ I honestly crush over u every single day...how did I get the prettiest, most tal
         <div class="cell" onclick="playTurn(8)"></div>
     </div>
 
-    <div id="cert-wrapper" onclick="goToValentine()"><img src="Certificate.png"></div>
+    <div id="cert-wrapper" onclick="goToValentine()"  ontouchstart="goToValentine()"><img src="Certificate.png"></div>
 </div>
 
     <div id="valentine-page">
@@ -353,7 +355,7 @@ I honestly crush over u every single day...how did I get the prettiest, most tal
         <img style="width:180px;" src="PROPOSE.png">
         <h1 style="font-family: 'Playfair Display'; color: #ff8da1; font-size: 2.5rem; padding: 0 20px;">Will you be my Valentine and make this a Happy Ending? 🎀</h1>
         <div class="val-btns">
-            <button id="yes-btn" class="btn-main" onclick="acceptedValentine()">Yessssss! 🥰</button>
+            <button id="yes-btn" class="btn-main" onclick="acceptedValentine()"  ontouchstart="acceptedValentine()">Yessssss! 🥰</button>
             <button id="no-btn" class="btn-main" onmouseover="moveNo()" ontouchstart="moveNo()">No Wayyyy 🤮</button>
         </div>
     </div>
@@ -672,6 +674,7 @@ function moveNo() {
 </body>
 
 </html>
+
 
 
 
