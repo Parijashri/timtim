@@ -527,15 +527,15 @@ I honestly crush over u every single day...how did I get the prettiest, most tal
         `;
         
         chit.onclick = () => { 
-            if(!chit.classList.contains('flipped')) { 
-                chit.classList.add('flipped'); 
-                flippedCount++; 
-                // Check if all 16 are flipped
-                if(flippedCount === 16) {
-                    setTimeout(triggerBigReveal, 1000);
-                } 
-            } 
-        };
+    if(!chit.classList.contains('flipped')) { 
+        chit.classList.add('flipped'); 
+        flippedCount++; 
+        if(flippedCount === 16) {
+            setTimeout(triggerBigReveal, 1000);
+        } 
+    } 
+};
+
         grid.appendChild(chit);
     });
 }
@@ -681,6 +681,7 @@ function moveNo() {
 </body>
 
 </html>
+
 
 
 
