@@ -526,15 +526,19 @@ I honestly crush over u every single day...how did I get the prettiest, most tal
             <div class="chit-back">${r}</div>
         `;
         
-        chit.onclick = () => { 
+        const flipChit = () => {
     if(!chit.classList.contains('flipped')) { 
         chit.classList.add('flipped'); 
         flippedCount++; 
         if(flippedCount === 16) {
             setTimeout(triggerBigReveal, 1000);
         } 
-    } 
+    }
 };
+
+chit.onclick = flipChit;
+chit.ontouchstart = flipChit;
+
 
         grid.appendChild(chit);
     });
@@ -681,6 +685,7 @@ function moveNo() {
 </body>
 
 </html>
+
 
 
 
