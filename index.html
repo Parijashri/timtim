@@ -156,20 +156,25 @@ body, html {
 }
 
 .chit-container { 
-    aspect-ratio: 3/2; /* Keeps them rectangular */
-    width: 100%; 
-    cursor: pointer; 
-    transform-style: preserve-3d; 
-    transition: 0.6s; 
-    position: relative; 
+    aspect-ratio: 3/2;
+    width: 100%;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+    position: relative;
+
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
+
 
 .chit-container.flipped { transform: rotateY(180deg); }
 
 .chit-front, .chit-back { 
     position: absolute; 
     inset: 0; 
-    backface-visibility: hidden; 
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; /* ADD THIS */
     border-radius: 12px; 
     display: flex; 
     align-items: center; 
@@ -178,6 +183,7 @@ body, html {
     font-family: 'Dancing Script'; 
     text-align: center; 
 }
+
 
 .chit-front { 
     background: #fff5ba; 
@@ -494,6 +500,8 @@ I honestly crush over u every single day...how did I get the prettiest, most tal
     }
 
     function showChits() {
+            flippedCount = 0;   // ADD THIS
+
     $('scrapbook-page').style.display = 'none';
     $('chits-page').style.display = 'flex';
     const grid = $('chits-grid'); 
@@ -640,15 +648,7 @@ chit.ontouchstart = flipChit;
         $('valentine-page').style.display = 'flex';
     }
 
-    function moveNo() {
-        const btn = $('no-btn');
-        btn.style.position = 'fixed';
-        // Randomly moves the No button across the screen so she can't click it
-        const newX = Math.random() * (window.innerWidth - 100);
-        const newY = Math.random() * (window.innerHeight - 50);
-        btn.style.left = newX + 'px';
-        btn.style.top = newY + 'px';
-    }
+    
 
    // Updated JavaScript for the Valentine Logic
 function acceptedValentine() {
@@ -673,12 +673,9 @@ function moveNo() {
     btn.style.top = newY + 'px';
 }
 
-       document.addEventListener("touchstart", function(){}, true);
 
-     document.querySelectorAll('.btn-main, .cell, .envelope, #cert-wrapper, .chit-container')
-.forEach(el => {
-  el.addEventListener('touchstart', e => e.target.click(), {passive:true});
-});
+   document.addEventListener("touchstart", function(){}, true);
+
 
 
 
@@ -686,6 +683,7 @@ function moveNo() {
 </body>
 
 </html>
+
 
 
 
