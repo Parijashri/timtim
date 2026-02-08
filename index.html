@@ -670,10 +670,17 @@ function moveNo() {
 
        document.addEventListener("touchstart", function(){}, true);
 
+       document.querySelectorAll('.btn-main, .cell, .envelope, #cert-wrapper')
+.forEach(el => {
+  el.addEventListener('touchstart', e => e.target.click(), {passive:true});
+});
+
+
 </script>
 </body>
 
 </html>
+
 
 
 
